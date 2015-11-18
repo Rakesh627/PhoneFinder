@@ -1,5 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,35 +7,36 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MyActivity"
-    android:background="#e8f4ff">
+    android:background="@color/secondary_text_default_material_light">
 
     <TextView
         android:text="@string/hello_world"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="80dp"
-        android:textIsSelectable="false"
-        android:textSize="20dp" />
+        android:id="@+id/textView" />
 
     <Button
-        android:layout_width="319dp"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Find Lost Phone"
-        android:id="@+id/findLostPhone"
-        android:layout_alignTop="@+id/horizontalScrollView"
+        android:text="Logout"
+        android:id="@+id/action_logout"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <HorizontalScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/horizontalScrollView"
+        android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/horizontalScrollView"
-        android:layout_alignEnd="@+id/horizontalScrollView"
-        android:background="@drawable/buttonshape"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp" />
+        android:layout_marginLeft="339dp"
+        android:layout_marginStart="339dp"
+        android:layout_marginTop="122dp" />
 
     <Button
-        android:layout_width="317dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="My Settings"
         android:id="@+id/mySettings"
@@ -44,20 +44,17 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/findLostPhone"
-        android:layout_alignEnd="@+id/findLostPhone"
-        android:background="@drawable/buttonshape" />
+        android:layout_alignEnd="@+id/findLostPhone" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="103dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logout"
-        android:id="@+id/action_logout"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/buttonshape"
-        android:layout_alignRight="@+id/textView"
-        android:layout_alignEnd="@+id/textView"
-        android:layout_marginTop="40dp"
-        android:layout_marginLeft="120dp" />
+        android:text="Find Lost Phone"
+        android:id="@+id/findLostPhone"
+        android:layout_alignTop="@+id/horizontalScrollView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/horizontalScrollView"
+        android:layout_alignEnd="@+id/horizontalScrollView" />
 
-</LinearLayout>
+</RelativeLayout>
