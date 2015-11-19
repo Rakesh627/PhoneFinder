@@ -10,6 +10,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
@@ -43,12 +44,13 @@ public class LocationService extends Service
     private static final int TWO_SECONDS = 2000;
     public LocationManager locationManager;
 
+    static final String TAG="bharathdebug";
     public  String ObjectId;
     public Location previousBestLocation = null;
     private static long UPDATE_INTERVAL = 60000;  //default
     double latitude=0;
     double longitude=0;
-    private static Timer timer = new Timer();
+    private static Timer timer =null;
     Intent intent;
     int counter = 0;
 
@@ -56,17 +58,30 @@ public class LocationService extends Service
     public void onCreate()
     {
         intent = new Intent(BROADCAST_ACTION);
+        if(timer!= null)
+        {
+            timer.cancel();
+        }
+        else
+        {
+            timer=new Timer();
+
+        }
         _startService();
+
 
     }
     private void _startService()
     {
+
         timer.scheduleAtFixedRate(
 
                 new TimerTask() {
 
                     public void run() {
                         doServiceWork();
+
+                        Log.i(TAG,"Location service -- 1");
 
                         //finding if we can help any user
                        try {
@@ -75,15 +90,20 @@ public class LocationService extends Service
                            socialQuery.findInBackground(new FindCallback<ParseObject>() {
                                @Override
                                public void done(List<ParseObject> objects, ParseException e) {
-                                   for (int i = 0; i < objects.size(); i++) {
-                                       String value = objects.get(i).getString("targetIds");
-                                       String split[] = value.split(",");
-                                       for (String val : split) {
-                                           if (val != null && val != "" && !val.isEmpty()) {
-                                               notifyUser(val);
+                                   if(objects!= null) {
+                                       for (int i = 0; i < objects.size(); i++) {
+                                           Log.i(TAG,"Location service -- 2");
+                                           String value = objects.get(i).getString("targetIds");
+                                           String split[] = value.split(",");
+                                           for (String val : split) {
+                                               Log.i(TAG,"Location service -- 3");
+                                               if (val != null && val != "" && !val.isEmpty()) {
+                                                   Log.i(TAG,"Location service -- 4");
+                                                   notifyUser(val);
+                                               }
                                            }
+                                           objects.get(i).deleteInBackground();
                                        }
-                                       objects.get(i).deleteInBackground();
                                    }
                                }
                            });
@@ -91,6 +111,7 @@ public class LocationService extends Service
                        catch (Exception e){}
                         //checking if we got help
                         try {
+                            Log.i(TAG,"Location service -- 5");
                             ParseQuery<ParseObject> helpQuery = new ParseQuery<ParseObject>("Acknowledge");
                             String objVal =ParseUser.getCurrentUser().getObjectId();
                             helpQuery.whereEqualTo("userId", ParseUser.getCurrentUser().getObjectId());
@@ -100,10 +121,46 @@ public class LocationService extends Service
                             helpQuery.findInBackground(new FindCallback<ParseObject>() {
                                 @Override
                                 public void done(List<ParseObject> objects, ParseException e) {
-                                    if(objects.size()>0)
-                                    {
-                                        notifyUserMessage();
+                                    Log.i(TAG,"Location service -- 6");
+                                    if(objects != null) {
+                                        if (objects.size() > 0) {
+                                            notifyUserMessage();
 
+                                        }
+                                    }
+
+                                }
+                            });
+
+                        }
+                        catch (Exception e){
+                            System.out.print(e.getStackTrace());
+                        }
+
+
+
+                        try {
+                            ParseQuery<ParseObject> soundProfile = new ParseQuery<ParseObject>("Settings");
+                            String objVal =ParseUser.getCurrentUser().getObjectId();
+                            soundProfile.whereEqualTo("userObjectId", ParseUser.getCurrentUser().getObjectId());
+                            soundProfile.findInBackground(new FindCallback<ParseObject>() {
+                                @Override
+                                public void done(List<ParseObject> objects, ParseException e) {
+                                    Log.i(TAG,"Location service -- 7");
+                                    if(objects!=null) {
+                                        if(objects!=null)
+                                        {
+                                            if(objects.size()>0)
+                                            {
+                                                if(objects.get(0).getBoolean("alertPhone"))
+                                                {
+                                                    AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                                                    audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                                                    objects.get(0).put("alertPhone",false);
+                                                    objects.get(0).saveInBackground();
+                                                }
+                                            }
+                                        }
                                     }
 
 
@@ -116,7 +173,8 @@ public class LocationService extends Service
                         }
 
                     }
-                }, 40000, 20000);
+                }, 1000,5000);
+        Log.i(TAG, "Location service -- 8");
         Log.i(getClass().getSimpleName(), "FileScannerService Timer started....");
     }
 
@@ -158,7 +216,6 @@ public class LocationService extends Service
         Location location = null;
         try {
             locationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
-            _startService();
             LocationListener locationListener = new LocationListener() {
                 public void onLocationChanged(Location location) {
                     latitude = location.getLatitude();

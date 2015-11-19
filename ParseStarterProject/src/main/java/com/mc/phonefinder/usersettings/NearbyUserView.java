@@ -45,118 +45,60 @@ public class NearbyUserView extends ActionBarActivity {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
                 final ParseGeoPoint userLocation;
-                if (objects.size() > 0) {
-                    userLocation = objects.get(0).getParseGeoPoint("location");
-                    ParseQuery<ParseObject> helperUsers = new ParseQuery<ParseObject>("Location");
-                    helperUsers.findInBackground(new FindCallback<ParseObject>() {
-                        @Override
-                        public void done(final List<ParseObject> objects, ParseException e) {
-                            ParseGeoPoint pt;
-                            List<String> objectIds = new ArrayList<String>();
-                            for (int i = 0; i < objects.size(); i++) {
-                                if (objects.get(i).getString("userId").equals(ObjectId)) {
-                                    continue;
-                                }
-                                pt = objects.get(i).getParseGeoPoint("location");
+                if(objects != null) {
+                    if (objects.size() > 0) {
+                        userLocation = objects.get(0).getParseGeoPoint("location");
+                        ParseQuery<ParseObject> helperUsers = new ParseQuery<ParseObject>("Location");
+                        helperUsers.findInBackground(new FindCallback<ParseObject>() {
+                            @Override
+                            public void done(final List<ParseObject> objects, ParseException e) {
+                                ParseGeoPoint pt;
+                                List<String> objectIds = new ArrayList<String>();
+                                for (int i = 0; i < objects.size(); i++) {
+                                    if (objects.get(i).getString("userId").equals(ObjectId)) {
+                                        continue;
+                                    }
+                                    pt = objects.get(i).getParseGeoPoint("location");
 
 
-                                //pubnub
-                               /* final Pubnub pubnub = new Pubnub( "pub-c-5cbdec77-1abf-4a20-8b7e-99e6c71e3505","sub-c-26fad170-8bc0-11e5-bf00-02ee2ddab7fe");
-                                JSONObject data = new JSONObject();
 
-                                try {
-                                    data.put("color", "blue");
-                                } catch (JSONException f) {
-                                    f.printStackTrace();
-                                }
+                                    float temp = distFrom((float) userLocation.getLatitude(), (float) userLocation.getLongitude(), (float) pt.getLatitude(), (float) pt.getLongitude());
+                                    if (temp <= 100) {
+                                        objectIds.add(objects.get(i).getString("userId"));
+                                        ParseQuery<ParseObject> query = ParseQuery.getQuery("Social");
 
-                                pubnub.publish("demo_tutorial", data, new Callback() {});
-                                System.out.print("");*/
-                                /*try {
-                                    pubnub.subscribe("demo_tutorial", new Callback() {
-                                        @Override
-                                        public void connectCallback(String channel, Object message) {
-                                            distFrom(0,0,0,0);
-                                            if (Looper.myLooper() == null) {
-                                                Looper.prepare();
-                                            }
-                                            Toast.makeText(NearbyUserView.this, "SUBSCRIBE : " + channel + " : "
-                                                    + message.getClass() + " : " + message.toString(), Toast.LENGTH_LONG);
-                                       *//*     pubnub.publish("demo_tutorial", "Hello from the PubNub Java SDK", new Callback() {
-                                            });*//*
-                                        }
-
-                                       *//* @Override
-                                        public void disconnectCallback(String channel, Object message) {
-                                            distFrom(0,0,0,0);
-
-                                            System.out.println("SUBSCRIBE : DISCONNECT on channel:" + channel
-                                                    + " : " + message.getClass() + " : "
-                                                    + message.toString());
-                                        }
-
-                                        public void reconnectCallback(String channel, Object message) {
-                                            distFrom(0,0,0,0);
-
-                                            System.out.println("SUBSCRIBE : RECONNECT on channel:" + channel
-                                                    + " : " + message.getClass() + " : "
-                                                    + message.toString());
-                                        }
-
-
-                                        public void successCallback(String channel, Object message) {
-                                            distFrom(0,0,0,0);
-                                            System.out.println("SUBSCRIBE : " + channel + " : "
-                                                    + message.getClass() + " : " + message.toString());
-                                        }*//*
-
-                                        public void errorCallback(String channel, PubnubError error) {
-                                            System.out.println(error.getErrorString());
-                                        }
-                                    });
-                                } catch (PubnubException f) {
-                                    f.printStackTrace();
-                                }*/
-
-                                //pubnub
-
-
-                                float temp = distFrom((float) userLocation.getLatitude(), (float) userLocation.getLongitude(), (float) pt.getLatitude(), (float) pt.getLongitude());
-                                if (temp <= 100) {
-                                    objectIds.add(objects.get(i).getString("userId"));
-                                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Social");
-
-                                    query.whereEqualTo("userId", objects.get(i).getString("userId"));
-                                    final int finalI = i;
-                                    query.findInBackground(new FindCallback<ParseObject>() {
-                                        public void done(List<ParseObject> scoreList, ParseException e) {
-                                            //get current user
-                                            int j = finalI;
-                                            if (e == null) {
-                                                if (scoreList.size() > 0) {
-                                                    //store the location of the user with the objectId of the user
-                                                    String temp = scoreList.get(0).getString("targetIds");
-                                                    temp += "," + ObjectId;
-                                                    scoreList.get(0).put("targetIds", temp);
-                                                    scoreList.get(0).saveInBackground();
+                                        query.whereEqualTo("userId", objects.get(i).getString("userId"));
+                                        final int finalI = i;
+                                        query.findInBackground(new FindCallback<ParseObject>() {
+                                            public void done(List<ParseObject> scoreList, ParseException e) {
+                                                //get current user
+                                                int j = finalI;
+                                                if (e == null) {
+                                                    if (scoreList.size() > 0) {
+                                                        //store the location of the user with the objectId of the user
+                                                        String temp = scoreList.get(0).getString("targetIds");
+                                                        temp += "," + ObjectId;
+                                                        scoreList.get(0).put("targetIds", temp);
+                                                        scoreList.get(0).saveInBackground();
+                                                    } else {
+                                                        ParseObject locationObject = new ParseObject("Social");
+                                                        locationObject.put("userId", objects.get(finalI).getString("userId"));
+                                                        locationObject.put("targetIds", ObjectId);
+                                                        locationObject.saveInBackground();
+                                                    }
                                                 } else {
-                                                    ParseObject locationObject = new ParseObject("Social");
-                                                    locationObject.put("userId", objects.get(finalI).getString("userId"));
-                                                    locationObject.put("targetIds", ObjectId);
-                                                    locationObject.saveInBackground();
+
                                                 }
-                                            } else {
-
                                             }
-                                        }
-                                    });
+                                        });
 
+                                    }
                                 }
                             }
-                        }
-                    });
-                    Toast.makeText(NearbyUserView.this, "Finding users", Toast.LENGTH_LONG)
-                            .show();
+                        });
+                        Toast.makeText(NearbyUserView.this, "Asking Nearby Users For Help", Toast.LENGTH_LONG)
+                                .show();
+                    }
                 }
             }
         });
